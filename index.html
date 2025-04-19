@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scroll</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body>
+
+    <div class="bg-zinc-900 w-full ">
+        <div class="w-full parent   h-[700vh]">
+            <div class="w-full sticky top-0 left-0 h-screen ">
+                <canvas id="frame" class="w-full h-screen"></canvas>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.7/gsap.min.js"
+        integrity="sha512-f6bQMg6nkSRw/xfHw5BCbISe/dJjXrVGfz9BSDwhZtiErHwk7ifbmBEtF9vFW8UNIQPhV2uEFVyI/UHob9r7Cw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+        let canvas = document.getElementById('frame');
+        let images = []
+        let imagesLoad = 0
+        let frame = {
+            currentIndex: 0,
+            maxIndex: 382,
+        }
+        function preLoadImages() {
+            for (let i = 1; i <= frame.maxIndex; i++) {
+                let imageUrl = `./frames/frame_${i.toString().padStart(4, "0")}.jpeg`
+                let img = new Image()
+                img.src = imageUrl
+                // console.log(imageUrl);
+                img.onload = () => {
+                    imagesLoad++
+                    if (imagesLoad == frame.maxIndex) {
+                        // console.log('all images loaded')
+                        loadImage(frame.currentIndex)
+                    }
+                }
+                images.push(img)
+            }
+        }
+        function loadImage(index) {
+            if (index >= 0 && index <= frame.maxIndex) {
+                let img = images[index];
+                canvas.width = window.innerWidth
+                canvas.height = window.innerHeight
+                let scaleX = canvas.width / img.width
+                let scaleY = canvas.height / img.height
+                let scale = Math.min(scaleX, scaleY)
+            }
+        }
+        console.log(images);
+
+        preLoadImages()
+    </script>
+</body>
+
+</html>
