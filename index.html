@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
@@ -7,21 +7,6 @@
     <title>Scroll Animation</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Remove default margins and padding */
-        html,
-        body {
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden;
-        }
-
-        /* Ensure canvas container takes full viewport */
-        .canva_parent {
-            width: 100vw;
-            height: 100vh;
-        }
-        
-        /* Loading screen styles */
         .loading-screen {
             position: fixed;
             top: 0;
@@ -33,7 +18,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 1000;
+            z-index: 100;
             transition: opacity 0.5s ease-out;
         }
         
@@ -42,120 +27,97 @@
             height: 50px;
             border: 5px solid rgba(255, 255, 255, 0.1);
             border-radius: 50%;
-            border-top-color: #fff;
+            border-top-color: #ffffff;
             animation: spin 1s ease-in-out infinite;
             margin-bottom: 20px;
-        }
-        
-        .loading-text {
-            color: white;
-            font-size: 1.2rem;
-            margin-top: 10px;
-        }
-        
-        .progress-bar {
-            width: 200px;
-            height: 4px;
-            background-color: rgba(255, 255, 255, 0.1);
-            margin-top: 10px;
-            border-radius: 2px;
-            overflow: hidden;
-        }
-        
-        .progress {
-            height: 100%;
-            background-color: white;
-            width: 0%;
-            transition: width 0.3s ease;
         }
         
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
         
-        .loading-screen.hidden {
+        .progress-text {
+            color: white;
+            font-size: 1.2rem;
+            margin-top: 10px;
+        }
+        
+        .hidden {
             opacity: 0;
             pointer-events: none;
         }
     </style>
 </head>
 
-<body class="bg-zinc-900 m-0 p-0 overflow-hidden">
+<body>
     <!-- Loading Screen -->
-    <div class="loading-screen" id="loadingScreen">
+    <div id="loadingScreen" class="loading-screen">
         <div class="loading-spinner"></div>
-        <div class="loading-text">Loading...</div>
-        <div class="progress-bar">
-            <div class="progress" id="progressBar"></div>
-        </div>
-        <div class="loading-text" id="progressText">0%</div>
+        <div class="text-white text-xl mb-2">Loading animation...</div>
+        <div id="progressText" class="progress-text">0%</div>
     </div>
 
-    <div class="parent h-[700vh] w-full relative">
-        <div class="canva_parent fixed top-0 left-0">
-            <canvas id="frame" class="w-full h-full"></canvas>
+    <!-- Main Content -->
+    <div class="bg-zinc-900 w-full">
+        <div class="w-full parent h-[1000vh]">
+            <p class="text-[10vw] fixed z-50 text-white top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-screen text-center font-[900]">JUST SCROLL</p>
+            <div class="w-full fixed top-0 left-0 h-screen">
+                <canvas id="frame" class="w-screen h-screen"></canvas>
+            </div>
         </div>
     </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.7/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.7/ScrollTrigger.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.7/gsap.min.js"
+        integrity="sha512-f6bQMg6nkSRw/xfHw5BCbISe/dJjXrVGfz9BSDwhZtiErHwk7ifbmBEtF9vFW8UNIQPhV2uEFVyI/UHob9r7Cw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.7/ScrollTrigger.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     <script>
         gsap.registerPlugin(ScrollTrigger);
 
-        const canvas = document.getElementById('frame');
-        const context = canvas.getContext('2d');
-        const images = [];
+        let canvas = document.getElementById('frame');
+        let ctx = canvas.getContext('2d');
+        let images = [];
         let imagesLoad = 0;
+        let loadingScreen = document.getElementById('loadingScreen');
+        let progressText = document.getElementById('progressText');
 
-        const frame = {
-            currentIndex: 0,
-            maxIndex: 382,
+        let frame = {
+            currentIndex: 10,
+            maxIndex: 1488,
         };
-
-        // Loading screen elements
-        const loadingScreen = document.getElementById('loadingScreen');
-        const progressBar = document.getElementById('progressBar');
-        const progressText = document.getElementById('progressText');
-
-        // Set canvas size to full viewport
-        function setCanvasSize() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-
-        // Call it once on load
-        setCanvasSize();
 
         function preLoadImages() {
             for (let i = 1; i <= frame.maxIndex; i++) {
-                const imageUrl = `./frames/frame_${i.toString().padStart(4, "0")}.jpeg`;
-                const img = new Image();
+                let imageUrl = `./frames/frame_${i.toString().padStart(4, "0")}.jpeg`;
+                let img = new Image();
                 img.src = imageUrl;
 
                 img.onload = () => {
                     imagesLoad++;
                     // Update progress
-                    const progress = Math.floor((imagesLoad / frame.maxIndex) * 100);
-                    progressBar.style.width = `${progress}%`;
+                    let progress = Math.floor((imagesLoad / frame.maxIndex) * 100);
                     progressText.textContent = `${progress}%`;
                     
                     if (imagesLoad === frame.maxIndex) {
-                        console.log('All images loaded');
-                        // Hide loading screen after a short delay
+                        // All images loaded, hide loading screen
                         setTimeout(() => {
                             loadingScreen.classList.add('hidden');
-                            // Start the animation
                             loadImage(frame.currentIndex);
-                            initScrollAnimation();
+                            startanimation();
                         }, 500); // Short delay for smooth transition
                     }
                 };
 
                 img.onerror = () => {
-                    console.error('Error loading image:', imageUrl);
-                    // Even if error occurs, count it as loaded to prevent infinite loading
-                    imagesLoad++;
+                    console.error(`Error loading image: ${imageUrl}`);
+                    imagesLoad++; // Count even if error to prevent infinite loading
+                    if (imagesLoad === frame.maxIndex) {
+                        loadingScreen.classList.add('hidden');
+                        loadImage(frame.currentIndex);
+                        startanimation();
+                    }
                 };
 
                 images.push(img);
@@ -164,68 +126,53 @@
 
         function loadImage(index) {
             if (index >= 0 && index < images.length) {
-                const img = images[index];
+                let img = images[index];
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
 
-                // Calculate cover-style scaling
-                const imgAspect = img.width / img.height;
-                const canvasAspect = canvas.width / canvas.height;
+                // Calculate scale to cover the entire viewport
+                let scale = Math.max(
+                    canvas.width / img.width,
+                    canvas.height / img.height
+                );
 
-                let renderWidth, renderHeight, offsetX, offsetY;
+                // Calculate position to center the image
+                let x = (canvas.width - img.width * scale) / 2;
+                let y = (canvas.height - img.height * scale) / 2;
 
-                if (imgAspect > canvasAspect) {
-                    // Image is wider than canvas - fit to height
-                    renderHeight = canvas.height;
-                    renderWidth = img.width * (renderHeight / img.height);
-                    offsetX = (canvas.width - renderWidth) / 2;
-                    offsetY = 0;
-                } else {
-                    // Image is taller than canvas - fit to width
-                    renderWidth = canvas.width;
-                    renderHeight = img.height * (renderWidth / img.width);
-                    offsetX = 0;
-                    offsetY = (canvas.height - renderHeight) / 2;
-                }
-
-                context.clearRect(0, 0, canvas.width, canvas.height);
-                context.imageSmoothingEnabled = true;
-                context.imageSmoothingQuality = 'high';
-                context.drawImage(img, offsetX, offsetY, renderWidth, renderHeight);
-
-                frame.currentIndex = index;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(
+                    img, 
+                    0, 0, img.width, img.height, 
+                    x, y, img.width * scale, img.height * scale
+                );
             }
         }
 
-        function initScrollAnimation() {
+        function startanimation() {
             gsap.to(frame, {
-                currentIndex: frame.maxIndex - 1, // -1 because array is 0-indexed
-                ease: "none",
+                currentIndex: frame.maxIndex - 1,
                 scrollTrigger: {
                     trigger: ".parent",
                     start: "top top",
                     end: "bottom bottom",
-                    scrub: 1,
-                    onUpdate: (self) => {
-                        const frameIndex = Math.floor(self.progress * (frame.maxIndex - 1));
-                        loadImage(frameIndex);
-                    }
+                    scrub: 2,
+                },
+                onUpdate: () => {
+                    loadImage(Math.floor(frame.currentIndex));
                 }
             });
         }
 
         // Handle window resize
         window.addEventListener('resize', () => {
-            setCanvasSize();
             if (images.length > 0) {
-                loadImage(frame.currentIndex);
+                loadImage(Math.floor(frame.currentIndex));
             }
         });
 
-        // Start loading when page loads
-        window.addEventListener('load', () => {
-            setCanvasSize();
-            preLoadImages();
-        });
+        // Start preloading
+        preLoadImages();
     </script>
 </body>
-
 </html>
