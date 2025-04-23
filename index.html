@@ -13,7 +13,8 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: #18181b; /* zinc-900 */
+            background-color: #18181b;
+            /* zinc-900 */
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -21,7 +22,7 @@
             z-index: 100;
             transition: opacity 0.5s ease-out;
         }
-        
+
         .loading-spinner {
             width: 50px;
             height: 50px;
@@ -31,17 +32,19 @@
             animation: spin 1s ease-in-out infinite;
             margin-bottom: 20px;
         }
-        
+
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
-        
+
         .progress-text {
             color: white;
             font-size: 1.2rem;
             margin-top: 10px;
         }
-        
+
         .hidden {
             opacity: 0;
             pointer-events: none;
@@ -60,18 +63,20 @@
     <!-- Main Content -->
     <div class="bg-zinc-900 w-full">
         <div class="w-full parent h-[300vh]">
-            <p class="text-[10vw] fixed z-50 text-white top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-screen text-center font-[900]">JUST SCROLL</p>
+            <p
+                class="text-[10vw] fixed z-50 text-white top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-screen text-center font-[900]">
+                JUST SCROLL</p>
             <div class="w-full fixed top-0 left-0 h-screen">
                 <canvas id="frame" class="w-screen h-screen"></canvas>
             </div>
         </div>
     </div>
-    
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.7/gsap.min.js"
         integrity="sha512-f6bQMg6nkSRw/xfHw5BCbISe/dJjXrVGfz9BSDwhZtiErHwk7ifbmBEtF9vFW8UNIQPhV2uEFVyI/UHob9r7Cw=="
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.7/ScrollTrigger.min.js"
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.7/ScrollTrigger.min.js" crossorigin="anonymous"
+        referrerpolicy="no-referrer"></script>
 
     <script>
         gsap.registerPlugin(ScrollTrigger);
@@ -89,42 +94,42 @@
         };
 
         // Modify your preLoadImages function to load images in batches
-function preLoadImages() {
-    const batchSize = 50; // Load 50 images at a time
-    let loadedCount = 0;
-    
-    function loadBatch(startIndex) {
-        const endIndex = Math.min(startIndex + batchSize, frame.maxIndex);
-        
-        for (let i = startIndex; i <= endIndex; i++) {
-            let imageUrl = `./frames/frame_${i.toString().padStart(4, "0")}.jpeg`;
-            let img = new Image();
-            img.src = imageUrl;
+        function preLoadImages() {
+            const batchSize = 50; // Load 50 images at a time
+            let loadedCount = 0;
 
-            img.onload = img.onerror = () => {
-                loadedCount++;
-                // Update progress
-                let progress = Math.floor((loadedCount / frame.maxIndex) * 100);
-                progressText.textContent = `${progress}%`;
-                
-                if (loadedCount === frame.maxIndex) {
-                    setTimeout(() => {
-                        loadingScreen.classList.add('hidden');
-                        loadImage(frame.currentIndex);
-                        startanimation();
-                    }, 500);
-                } else if (loadedCount % batchSize === 0) {
-                    // Load next batch
-                    setTimeout(() => loadBatch(endIndex + 1), 100);
+            function loadBatch(startIndex) {
+                const endIndex = Math.min(startIndex + batchSize, frame.maxIndex);
+
+                for (let i = startIndex; i <= endIndex; i++) {
+                    let imageUrl = `./frames/frame_${i.toString().padStart(4, "0")}.jpeg`;
+                    let img = new Image();
+                    img.src = imageUrl;
+
+                    img.onload = img.onerror = () => {
+                        loadedCount++;
+                        // Update progress
+                        let progress = Math.floor((loadedCount / frame.maxIndex) * 100);
+                        progressText.textContent = `${progress}%`;
+
+                        if (loadedCount === frame.maxIndex) {
+                            setTimeout(() => {
+                                loadingScreen.classList.add('hidden');
+                                loadImage(frame.currentIndex);
+                                startanimation();
+                            }, 500);
+                        } else if (loadedCount % batchSize === 0) {
+                            // Load next batch
+                            setTimeout(() => loadBatch(endIndex + 1), 100);
+                        }
+                    };
+
+                    images.push(img);
                 }
-            };
+            }
 
-            images.push(img);
+            loadBatch(1);
         }
-    }
-    
-    loadBatch(1);
-}
 
         function loadImage(index) {
             if (index >= 0 && index < images.length) {
@@ -144,8 +149,8 @@ function preLoadImages() {
 
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.drawImage(
-                    img, 
-                    0, 0, img.width, img.height, 
+                    img,
+                    0, 0, img.width, img.height,
                     x, y, img.width * scale, img.height * scale
                 );
             }
@@ -177,4 +182,5 @@ function preLoadImages() {
         preLoadImages();
     </script>
 </body>
+
 </html>
