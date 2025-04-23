@@ -84,45 +84,47 @@
         let progressText = document.getElementById('progressText');
 
         let frame = {
-            currentIndex: 10,
-            maxIndex: 1000,
+            currentIndex: 1,
+            maxIndex: 1488,
         };
 
-        function preLoadImages() {
-            for (let i = 1; i <= frame.maxIndex; i++) {
-                let imageUrl = `./frames/frame_${i.toString().padStart(4, "0")}.jpeg`;
-                let img = new Image();
-                img.src = imageUrl;
+        // Modify your preLoadImages function to load images in batches
+function preLoadImages() {
+    const batchSize = 50; // Load 50 images at a time
+    let loadedCount = 0;
+    
+    function loadBatch(startIndex) {
+        const endIndex = Math.min(startIndex + batchSize, frame.maxIndex);
+        
+        for (let i = startIndex; i <= endIndex; i++) {
+            let imageUrl = `./frames/frame_${i.toString().padStart(4, "0")}.jpeg`;
+            let img = new Image();
+            img.src = imageUrl;
 
-                img.onload = () => {
-                    imagesLoad++;
-                    // Update progress
-                    let progress = Math.floor((imagesLoad / frame.maxIndex) * 100);
-                    progressText.textContent = `${progress}%`;
-                    
-                    if (imagesLoad === frame.maxIndex) {
-                        // All images loaded, hide loading screen
-                        setTimeout(() => {
-                            loadingScreen.classList.add('hidden');
-                            loadImage(frame.currentIndex);
-                            startanimation();
-                        }, 500); // Short delay for smooth transition
-                    }
-                };
-
-                img.onerror = () => {
-                    console.error(`Error loading image: ${imageUrl}`);
-                    imagesLoad++; // Count even if error to prevent infinite loading
-                    if (imagesLoad === frame.maxIndex) {
+            img.onload = img.onerror = () => {
+                loadedCount++;
+                // Update progress
+                let progress = Math.floor((loadedCount / frame.maxIndex) * 100);
+                progressText.textContent = `${progress}%`;
+                
+                if (loadedCount === frame.maxIndex) {
+                    setTimeout(() => {
                         loadingScreen.classList.add('hidden');
                         loadImage(frame.currentIndex);
                         startanimation();
-                    }
-                };
+                    }, 500);
+                } else if (loadedCount % batchSize === 0) {
+                    // Load next batch
+                    setTimeout(() => loadBatch(endIndex + 1), 100);
+                }
+            };
 
-                images.push(img);
-            }
+            images.push(img);
         }
+    }
+    
+    loadBatch(1);
+}
 
         function loadImage(index) {
             if (index >= 0 && index < images.length) {
