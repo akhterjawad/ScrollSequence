@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scroll Animation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #18181b; /* zinc-900 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: opacity 0.5s ease-out;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: #ffffff;
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .progress-text {
+            color: white;
+            font-size: 1.2rem;
+            margin-top: 10px;
+        }
+        
+        .hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-spinner"></div>
+        <div class="text-white text-xl mb-2">Loading animation...</div>
+        <div id="progressText" class="progress-text">0%</div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="bg-zinc-900 w-full">
+        <div class="w-full parent h-[1000vh]">
+            <p class="text-[10vw] fixed z-50 text-white top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-screen text-center font-[900]">JUST SCROLL</p>
+            <div class="w-full fixed top-0 left-0 h-screen">
+                <canvas id="frame" class="w-screen h-screen"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.7/gsap.min.js"
+        integrity="sha512-f6bQMg6nkSRw/xfHw5BCbISe/dJjXrVGfz9BSDwhZtiErHwk7ifbmBEtF9vFW8UNIQPhV2uEFVyI/UHob9r7Cw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.7/ScrollTrigger.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+
+        let canvas = document.getElementById('frame');
+        let ctx = canvas.getContext('2d');
+        let images = [];
+        let imagesLoad = 0;
+        let loadingScreen = document.getElementById('loadingScreen');
+        let progressText = document.getElementById('progressText');
+
+        let frame = {
+            currentIndex: 1,
+            maxIndex: 760,
+        };
+
+        function preLoadImages() {
+            for (let i = 1; i <= frame.maxIndex; i++) {
+                let imageUrl = `./frames/frame_${i.toString().padStart(4, "0")}.jpg`;
+                let img = new Image();
+                img.src = imageUrl;
+
+                img.onload = () => {
+                    imagesLoad++;
+                    // Update progress
+                    let progress = Math.floor((imagesLoad / frame.maxIndex) * 100);
+                    progressText.textContent = `${progress}%`;
+                    
+                    if (imagesLoad === frame.maxIndex) {
+                        // All images loaded, hide loading screen
+                        setTimeout(() => {
+                            loadingScreen.classList.add('hidden');
+                            loadImage(frame.currentIndex);
+                            startanimation();
+                        }, 500); // Short delay for smooth transition
+                    }
+                };
+
+                img.onerror = () => {
+                    console.error(`Error loading image: ${imageUrl}`);
+                    imagesLoad++; // Count even if error to prevent infinite loading
+                    if (imagesLoad === frame.maxIndex) {
+                        loadingScreen.classList.add('hidden');
+                        loadImage(frame.currentIndex);
+                        startanimation();
+                    }
+                };
+
+                images.push(img);
+            }
+        }
+
+        function loadImage(index) {
+            if (index >= 0 && index < images.length) {
+                let img = images[index];
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+
+                // Calculate scale to cover the entire viewport
+                let scale = Math.max(
+                    canvas.width / img.width,
+                    canvas.height / img.height
+                );
+
+                // Calculate position to center the image
+                let x = (canvas.width - img.width * scale) / 2;
+                let y = (canvas.height - img.height * scale) / 2;
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(
+                    img, 
+                    0, 0, img.width, img.height, 
+                    x, y, img.width * scale, img.height * scale
+                );
+            }
+        }
+
+        function startanimation() {
+            gsap.to(frame, {
+                currentIndex: frame.maxIndex - 1,
+                scrollTrigger: {
+                    trigger: ".parent",
+                    start: "top top",
+                    end: "bottom bottom",
+                    scrub: 2,
+                },
+                onUpdate: () => {
+                    loadImage(Math.floor(frame.currentIndex));
+                }
+            });
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (images.length > 0) {
+                loadImage(Math.floor(frame.currentIndex));
+            }
+        });
+
+        // Start preloading
+        preLoadImages();
+    </script>
+</body>
+</html>
